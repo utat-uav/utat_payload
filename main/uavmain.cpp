@@ -93,7 +93,11 @@ int main(){
 			filename<<"im"<<std::setfill('0')<<std::setw(4)<<++n_saved<<".jpg";
 			directory<<FOLDER<<filename.str();
 		
+			auto start = std::chrono::system_clock::now();
 			camera->trigger(); //Send camera trigger
+			auto end = std::chrono::system_clock::now();
+			auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+			std::cout << "Trigger time: " << elapsed.count() << " ms\n";
 
 			if (usegps){
 				if(ublox->data_is_good)	
@@ -112,7 +116,12 @@ int main(){
 				cv::resize(frame,preview,cv::Size(),sizefac,sizefac,cv::INTER_NEAREST);
 
 				if(saveimg) {
+					auto start = std::chrono::system_clock::now();
 					cv::imwrite(directory.str(), preview, jpg_params);
+					auto end = std::chrono::system_clock::now();
+					auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
+					std::cout << "Trigger time: " << elapsed.count() << " microsec\n";
+
 					std::cout<<"Saved to " << filename.str() <<std::endl;
 				}
 
