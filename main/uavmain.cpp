@@ -109,7 +109,13 @@ int main(){
 			writeImageInfo(ublox->current_loc, filename.str()); //Record GPS 
 			mtx.unlock();
 
+			//start = std::chrono::system_clock::now();
 			frame_ok = camera->getImage(frame); //Acquire the image
+			/*end = std::chrono::system_clock::now();
+			auto acq_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+			std::cout << "ACQ time: " << acq_elapsed.count() << " ms\n";
+			*/
+
 
 			if(frame_ok){ //Acquired Image
 
@@ -119,8 +125,8 @@ int main(){
 					auto start = std::chrono::system_clock::now();
 					cv::imwrite(directory.str(), preview, jpg_params);
 					auto end = std::chrono::system_clock::now();
-					auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
-					std::cout << "Trigger time: " << elapsed.count() << " microsec\n";
+					auto wr_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
+					std::cout << "Write time: " << wr_elapsed.count() << " microsec\n";
 
 					std::cout<<"Saved to " << filename.str() <<std::endl;
 				}
