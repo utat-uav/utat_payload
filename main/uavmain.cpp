@@ -9,6 +9,8 @@
 //Opencv
 #include <opencv2/opencv.hpp>
 
+#include <time.h>
+
 //Project header files
 #include "webcamera.h"
 #include "gps_mod.h"
@@ -25,6 +27,7 @@ std::mutex mtx;
 Gps *ublox;
 int cameratype, usegps, saveimg, view, start_delay, strm; //Options
 double sizefac;
+clock_t t;
 
 void exit_signal(int param){
 	mtx.lock();
@@ -93,11 +96,10 @@ int main(){
 			filename<<"im"<<std::setfill('0')<<std::setw(4)<<++n_saved<<".jpg";
 			directory<<FOLDER<<filename.str();
 		
-			auto start = std::chrono::system_clock::now();
+			t = clock();
 			camera->trigger(); //Send camera trigger
-			auto end = std::chrono::system_clock::now();
-			auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-			std::cout << "Trigger time: " << elapsed.count() << " ms\n";
+			t = clock() - t;
+			std::cout << "Trigger time: " << ((float)t)/CLOCKS_PER_SEC*1000 << " ms\n";
 
 			if (usegps){
 				if(ublox->data_is_good)	
@@ -109,24 +111,20 @@ int main(){
 			writeImageInfo(ublox->current_loc, filename.str()); //Record GPS 
 			mtx.unlock();
 
-			//start = std::chrono::system_clock::now();
+			t = clock();
 			frame_ok = camera->getImage(frame); //Acquire the image
-			/*end = std::chrono::system_clock::now();
-			auto acq_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-			std::cout << "ACQ time: " << acq_elapsed.count() << " ms\n";
-			*/
-
+			t = clock() - t;
+			std::cout << "Buffer grab time: " << ((float)t)/CLOCKS_PER_SEC*1000 << " ms\n";
 
 			if(frame_ok){ //Acquired Image
 
 				cv::resize(frame,preview,cv::Size(),sizefac,sizefac,cv::INTER_NEAREST);
 
 				if(saveimg) {
-					auto start = std::chrono::system_clock::now();
+					t = clock();
 					cv::imwrite(directory.str(), preview, jpg_params);
-					auto end = std::chrono::system_clock::now();
-					auto wr_elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
-					std::cout << "Write time: " << wr_elapsed.count() << " microsec\n";
+					t = clock() - t;
+					std::cout << "Write time: " << ((float)t)/CLOCKS_PER_SEC*1000 << " ms\n";
 
 					std::cout<<"Saved to " << filename.str() <<std::endl;
 				}
