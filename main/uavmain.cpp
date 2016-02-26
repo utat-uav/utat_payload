@@ -96,10 +96,10 @@ int main(){
 			filename<<"im"<<std::setfill('0')<<std::setw(4)<<++n_saved<<".jpg";
 			directory<<FOLDER<<filename.str();
 		
-			t = clock();
+			//t = clock();
 			camera->trigger(); //Send camera trigger
-			t = clock() - t;
-			std::cout << "Trigger time: " << ((float)t)/CLOCKS_PER_SEC*1000 << " ms\n";
+			//t = clock() - t;
+			//std::cout << "Trigger time: " << ((float)t)/CLOCKS_PER_SEC*1000 << " ms\n";
 
 			if (usegps){
 				if(ublox->data_is_good)	
@@ -111,20 +111,20 @@ int main(){
 			writeImageInfo(ublox->current_loc, filename.str()); //Record GPS 
 			mtx.unlock();
 
-			t = clock();
+			//t = clock();
 			frame_ok = camera->getImage(frame); //Acquire the image
-			t = clock() - t;
-			std::cout << "Buffer grab time: " << ((float)t)/CLOCKS_PER_SEC*1000 << " ms\n";
+			//t = clock() - t;
+			//std::cout << "Buffer grab time: " << ((float)t)/CLOCKS_PER_SEC*1000 << " ms\n";
 
 			if(frame_ok){ //Acquired Image
 
 				cv::resize(frame,preview,cv::Size(),sizefac,sizefac,cv::INTER_NEAREST);
 
 				if(saveimg) {
-					t = clock();
+					//t = clock();
 					cv::imwrite(directory.str(), preview, jpg_params);
-					t = clock() - t;
-					std::cout << "Write time: " << ((float)t)/CLOCKS_PER_SEC*1000 << " ms\n";
+					//t = clock() - t;
+					//std::cout << "Write time: " << ((float)t)/CLOCKS_PER_SEC*1000 << " ms\n";
 
 					std::cout<<"Saved to " << filename.str() <<std::endl;
 				}
