@@ -14,17 +14,14 @@
 #include "gps_mod.h"
 #include "io_utils.h"
 #include "config.h"
-#ifdef USE_ARAVIS
 #include "araviscamera.h" 
-#endif
 
 #define FOLDER "Pictures/"
 
 volatile std::sig_atomic_t finish = 0; //Signal Variable
 std::mutex mtx;
 Gps *ublox;
-int cameratype, usegps, saveimg, view, start_delay, strm; //Options
-double sizefac;
+int usegps, saveimg, view, start_delay, strm; //Options
 
 void exit_signal(int param){
 	mtx.lock();
@@ -52,7 +49,7 @@ int main(){
 	std::stringstream directory;
 
 	std::vector<int> jpg_params;
-	cv::Mat frame, preview;
+	cv::Mat frame;
 
 	parseConfig();
 	jpg_params.push_back(CV_IMWRITE_JPEG_QUALITY);
@@ -62,14 +59,8 @@ int main(){
 	std::signal(SIGINT,exit_signal); 	//Set up Ctrl+C signal
 
 	//Construct Cameras
-	if (cameratype == 1){
-#ifdef USE_ARAVIS
-		camera = new AravisCam();
-		std::cout<<"Using Aravis camera"<<std::endl;
-#else
-		camera = new WebCam();
-#endif
-	}
+    camera = new AravisCam();
+    std::cout<<"Using Aravis camera"<<std::endl;
 	
 	if(view)	
 		cv::namedWindow("Camera Viewer", cv::WINDOW_AUTOSIZE);
@@ -108,18 +99,8 @@ int main(){
 			frame_ok = camera->getImage(frame); //Acquire the image
 
 			if(frame_ok){ //Acquired Image
-
-				cv::resize(frame,preview,cv::Size(),sizefac,sizefac,cv::INTER_NEAREST);
-
-				if(saveimg) {
-					cv::imwrite(directory.str(), preview, jpg_params);
-					std::cout<<"Saved to " << filename.str() <<std::endl;
-				}
-
-				if(view) {
-					cv::imshow("Camera Viewer", preview); 
-					cv::waitKey(50);
-				}	
+                cv::imwrite(directory.str(), frame, jpg_params);
+                std::cout<<"Saved to " << filename.str() <<std::endl;
 			}
 			
 			std::this_thread::sleep_for(std::chrono::milliseconds(250));

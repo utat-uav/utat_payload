@@ -1,6 +1,0 @@
-cmake_minimum_required(VERSION 2.8)
-project( mesurf )
-file( GLOB SOURCES *.cpp )
-find_package( OpenCV REQUIRED )
-add_executable( mesurf ${SOURCES} )
-target_link_libraries( mesurf ${OpenCV_LIBS} )

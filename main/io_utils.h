@@ -7,7 +7,7 @@
 #define CONFIG_FILE "uav/utat_payload/options.cfg"
 #define LOG_FILE "Pictures/uav_gps.log"
 
-extern int cameratype, usegps, saveimg, view, start_delay, strm;
+extern int usegps, saveimg, view, start_delay, strm;
 extern double sizefac;
 
 bool parseConfig();

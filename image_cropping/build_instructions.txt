@@ -1,8 +1,0 @@
-cd into build directory and run
-cmake ..
-
-Then run
-
-make
-
-and it will build to mesurf

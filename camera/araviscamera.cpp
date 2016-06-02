@@ -13,14 +13,16 @@ AravisCam:: ~AravisCam(){
 
 bool AravisCam::initializeCam(){
 	ArvGcNode *feature;
+    ArvCamera *payload_camera;
 	std::vector<std::string> settings; 
 	GType value_type;
 	bool config_ok;
-	int width, height;
+	int width, height, packet_size;
 
 //  Initial Setup - Find the Camera	
 	std::cout<<"Looking for the Camera...\n";
-	device = arv_open_device(NULL);
+	payload_camera = arv_camera_new(NULL);
+	device = arv_camera_get_device(payload_camera); //arv_open_device(NULL);
 	
 	if(device == NULL) {
 		std::cout<< "No camera found!" << std::endl;
@@ -32,6 +34,20 @@ bool AravisCam::initializeCam(){
 	std::cout<< "Found "<< arv_get_device_id(0) << std::endl;
 	genicam = arv_device_get_genicam(device);
 
+    std::cout << "ArvCameraPxFormat: " << arv_camera_get_pixel_format_as_string(payload_camera) << std::endl;
+
+    feature = arv_gc_get_node(genicam, "GevStreamChannelCount");
+    packet_size = arv_gc_integer_get_value(ARV_GC_INTEGER (feature), NULL);
+    std::cout << "GevStreamChannelCount: " << packet_size <<  std::endl; 
+
+    feature = arv_gc_get_node(genicam, "dataStreamSelector");
+    packet_size = arv_gc_integer_get_value(ARV_GC_INTEGER (feature), NULL);
+    std::cout << "dataStreamSelector: " << packet_size <<  std::endl; 
+
+    feature = arv_gc_get_node(genicam, "dataStreamType");
+    packet_size = arv_gc_integer_get_value(ARV_GC_INTEGER (feature), NULL);
+    std::cout << "dataStreamType: " << packet_size <<  std::endl; 
+
 	feature = arv_gc_get_node(genicam,"Width");
 	width = arv_gc_integer_get_value(ARV_GC_INTEGER (feature), NULL);
 		
@@ -39,6 +55,7 @@ bool AravisCam::initializeCam(){
 	height = arv_gc_integer_get_value(ARV_GC_INTEGER (feature), NULL);
 
 	feature = arv_gc_get_node (genicam, "PayloadSize");
+    arv_gc_integer_set_value(ARV_GC_INTEGER(feature), 2354176, NULL);
 	payload = arv_gc_integer_get_value (ARV_GC_INTEGER (feature), NULL);
 
 	std::cout<<"Image " << width << "x" << height << ", " << payload << " bytes " << std::endl;
@@ -50,7 +67,7 @@ bool AravisCam::initializeCam(){
 		arv_stream_push_buffer (stream, arv_buffer_new (payload, NULL));
 	
 	//Allocate buffer and size
-	rawbuffer = new unsigned char[payload];	
+	rawbuffer = new unsigned char[1936*1216];	
 	size = cv::Size(width, height);
 
 	//Get and save the node that is the software trigger
@@ -74,9 +91,9 @@ bool AravisCam::getBuffer(){
 
 	std::cout<<"Getting Buffer...";
 	do {
-		g_usleep (50000);
+        g_usleep(50000);
 		cycles++;
-		//do  {
+		do  {
 		for (int i = 0; i < BUFFERQ; i++){
 			arvbufr = arv_stream_try_pop_buffer (stream);
 			if (arvbufr != NULL){
@@ -92,7 +109,7 @@ bool AravisCam::getBuffer(){
 				arv_stream_push_buffer (stream, arvbufr);
 			}		 
 		}
-		//} while (arvbufr != NULL);// && !snapped);
+		} while (arvbufr != NULL && !gotbuf);
 	}while(cycles < TIMEOUT && !gotbuf);
 
 	return gotbuf;
@@ -128,32 +145,14 @@ bool AravisCam::getImage(cv::Mat &frame){
 
 	bool image_ok = getBuffer();
 	
-/*	unsigned char* pix = rawbuffer;
-	float tmp;
-	int jmax = (int) (size.height/2);
-	int imax = (int) (size.width/2);
-	for (int j = 0; j<jmax; j++){
-		for (int i = 0; i<imax; i++){
-			tmp = (float)(*pix);
-			(*pix) = tmp*gain[1];
-			pix++;
-			tmp = (float)(*pix);
-			(*pix) = tmp*gain[2];
-			pix++;
-		}		
-		for (int i = 0; i<imax; i++){
-			tmp = (float)(*pix);
-			(*pix) = tmp*gain[0];
-			pix++;
-			tmp = (float)(*pix);
-			(*pix) = tmp*gain[1];
-			pix++;
-		}
-	}	*/	
-
 	if(image_ok){
 		rawmat = cv::Mat(size,CV_8UC1,rawbuffer);
 		cv::cvtColor(rawmat,frame,CV_BayerGB2RGB);	//Average Time = ~15 ms 
+		
+		if (frame.empty())
+		{
+			image_ok = false;
+		}
 	}
 	
 	return image_ok;

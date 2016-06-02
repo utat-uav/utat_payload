@@ -34,27 +34,27 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /usr/local/bin/cmake
+CMAKE_COMMAND = /usr/bin/cmake
 
 # The command to remove a file.
-RM = /usr/local/bin/cmake -E remove -f
+RM = /usr/bin/cmake -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/odroid/uav/utat_payload
+CMAKE_SOURCE_DIR = /home/odroid/UTAT/utat_payload
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/odroid/uav/utat_payload
+CMAKE_BINARY_DIR = /home/odroid/UTAT/utat_payload
 
 #=============================================================================
 # Targets provided globally by CMake.
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/local/bin/ccmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -64,24 +64,34 @@ edit_cache/fast: edit_cache
 # Special rule for the target install
 install: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/usr/local/bin/cmake -P cmake_install.cmake
+	/usr/bin/cmake -P cmake_install.cmake
 .PHONY : install
 
 # Special rule for the target install
 install/fast: preinstall/fast
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/usr/local/bin/cmake -P cmake_install.cmake
+	/usr/bin/cmake -P cmake_install.cmake
 .PHONY : install/fast
 
 # Special rule for the target install/local
 install/local: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/usr/local/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
 .PHONY : install/local
 
 # Special rule for the target install/local
 install/local/fast: install/local
 .PHONY : install/local/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: install/strip
+.PHONY : install/strip/fast
 
 # Special rule for the target list_install_components
 list_install_components:
@@ -95,7 +105,7 @@ list_install_components/fast: list_install_components
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/local/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -104,14 +114,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/odroid/uav/utat_payload && $(CMAKE_COMMAND) -E cmake_progress_start /home/odroid/uav/utat_payload/CMakeFiles /home/odroid/uav/utat_payload/camera/CMakeFiles/progress.marks
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f CMakeFiles/Makefile2 camera/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/odroid/uav/utat_payload/CMakeFiles 0
+	cd /home/odroid/UTAT/utat_payload && $(CMAKE_COMMAND) -E cmake_progress_start /home/odroid/UTAT/utat_payload/CMakeFiles /home/odroid/UTAT/utat_payload/camera/CMakeFiles/progress.marks
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f CMakeFiles/Makefile2 camera/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/odroid/UTAT/utat_payload/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f CMakeFiles/Makefile2 camera/clean
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f CMakeFiles/Makefile2 camera/clean
 .PHONY : clean
 
 # The main clean target
@@ -120,22 +130,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f CMakeFiles/Makefile2 camera/preinstall
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f CMakeFiles/Makefile2 camera/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f CMakeFiles/Makefile2 camera/preinstall
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f CMakeFiles/Makefile2 camera/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/odroid/uav/utat_payload && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/odroid/UTAT/utat_payload && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 camera/CMakeFiles/uavcam.dir/rule:
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f CMakeFiles/Makefile2 camera/CMakeFiles/uavcam.dir/rule
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f CMakeFiles/Makefile2 camera/CMakeFiles/uavcam.dir/rule
 .PHONY : camera/CMakeFiles/uavcam.dir/rule
 
 # Convenience name for target.
@@ -144,7 +154,7 @@ uavcam: camera/CMakeFiles/uavcam.dir/rule
 
 # fast build rule for target.
 uavcam/fast:
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/build
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/build
 .PHONY : uavcam/fast
 
 araviscamera.o: araviscamera.cpp.o
@@ -152,7 +162,7 @@ araviscamera.o: araviscamera.cpp.o
 
 # target to build an object file
 araviscamera.cpp.o:
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/araviscamera.cpp.o
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/araviscamera.cpp.o
 .PHONY : araviscamera.cpp.o
 
 araviscamera.i: araviscamera.cpp.i
@@ -160,7 +170,7 @@ araviscamera.i: araviscamera.cpp.i
 
 # target to preprocess a source file
 araviscamera.cpp.i:
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/araviscamera.cpp.i
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/araviscamera.cpp.i
 .PHONY : araviscamera.cpp.i
 
 araviscamera.s: araviscamera.cpp.s
@@ -168,7 +178,7 @@ araviscamera.s: araviscamera.cpp.s
 
 # target to generate assembly for a file
 araviscamera.cpp.s:
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/araviscamera.cpp.s
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/araviscamera.cpp.s
 .PHONY : araviscamera.cpp.s
 
 webcamera.o: webcamera.cpp.o
@@ -176,7 +186,7 @@ webcamera.o: webcamera.cpp.o
 
 # target to build an object file
 webcamera.cpp.o:
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/webcamera.cpp.o
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/webcamera.cpp.o
 .PHONY : webcamera.cpp.o
 
 webcamera.i: webcamera.cpp.i
@@ -184,7 +194,7 @@ webcamera.i: webcamera.cpp.i
 
 # target to preprocess a source file
 webcamera.cpp.i:
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/webcamera.cpp.i
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/webcamera.cpp.i
 .PHONY : webcamera.cpp.i
 
 webcamera.s: webcamera.cpp.s
@@ -192,7 +202,7 @@ webcamera.s: webcamera.cpp.s
 
 # target to generate assembly for a file
 webcamera.cpp.s:
-	cd /home/odroid/uav/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/webcamera.cpp.s
+	cd /home/odroid/UTAT/utat_payload && $(MAKE) -f camera/CMakeFiles/uavcam.dir/build.make camera/CMakeFiles/uavcam.dir/webcamera.cpp.s
 .PHONY : webcamera.cpp.s
 
 # Help Target
@@ -204,6 +214,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... install"
 	@echo "... install/local"
+	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... uavcam"
@@ -224,6 +235,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/odroid/uav/utat_payload && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/odroid/UTAT/utat_payload && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
