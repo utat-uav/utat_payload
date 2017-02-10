@@ -1,3 +1,0 @@
-#cmakedefine USE_ARAVIS
-#cmakedefine USE_GPHOTO
-#cmakedefine USE_GST

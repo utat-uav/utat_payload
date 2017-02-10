@@ -1,9 +1,9 @@
+/build
+
 *.make
 cmake_install*
 *.internal
-*.o
 *.dirstamp
-*.a
 *.swp
 camera/.deps/
 main/.deps/

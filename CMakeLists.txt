@@ -13,10 +13,6 @@ FIND_PACKAGE(Gpsd REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${LIBGPS_INCLUDE_DIR})
 
-configure_file (
-	"${PROJECT_SOURCE_DIR}/config.h.in"
-	"${PROJECT_BINARY_DIR}/config.h"
-)
 include_directories("${PROJECT_BINARY_DIR}")
 
 if (USE_ARAVIS)
