@@ -13,16 +13,14 @@ AravisCam:: ~AravisCam(){
 
 bool AravisCam::initializeCam(){
 	ArvGcNode *feature;
-    ArvCamera *payload_camera;
 	std::vector<std::string> settings; 
 	GType value_type;
 	bool config_ok;
-	int width, height, packet_size;
+	int width, height;
 
 //  Initial Setup - Find the Camera	
 	std::cout<<"Looking for the Camera...\n";
-	payload_camera = arv_camera_new(NULL);
-	device = arv_camera_get_device(payload_camera); //arv_open_device(NULL);
+	device = arv_open_device(NULL);
 	
 	if(device == NULL) {
 		std::cout<< "No camera found!" << std::endl;
@@ -34,20 +32,6 @@ bool AravisCam::initializeCam(){
 	std::cout<< "Found "<< arv_get_device_id(0) << std::endl;
 	genicam = arv_device_get_genicam(device);
 
-    std::cout << "ArvCameraPxFormat: " << arv_camera_get_pixel_format_as_string(payload_camera) << std::endl;
-
-    feature = arv_gc_get_node(genicam, "GevStreamChannelCount");
-    packet_size = arv_gc_integer_get_value(ARV_GC_INTEGER (feature), NULL);
-    std::cout << "GevStreamChannelCount: " << packet_size <<  std::endl; 
-
-    feature = arv_gc_get_node(genicam, "dataStreamSelector");
-    packet_size = arv_gc_integer_get_value(ARV_GC_INTEGER (feature), NULL);
-    std::cout << "dataStreamSelector: " << packet_size <<  std::endl; 
-
-    feature = arv_gc_get_node(genicam, "dataStreamType");
-    packet_size = arv_gc_integer_get_value(ARV_GC_INTEGER (feature), NULL);
-    std::cout << "dataStreamType: " << packet_size <<  std::endl; 
-
 	feature = arv_gc_get_node(genicam,"Width");
 	width = arv_gc_integer_get_value(ARV_GC_INTEGER (feature), NULL);
 		
@@ -55,7 +39,6 @@ bool AravisCam::initializeCam(){
 	height = arv_gc_integer_get_value(ARV_GC_INTEGER (feature), NULL);
 
 	feature = arv_gc_get_node (genicam, "PayloadSize");
-    arv_gc_integer_set_value(ARV_GC_INTEGER(feature), 2354176, NULL);
 	payload = arv_gc_integer_get_value (ARV_GC_INTEGER (feature), NULL);
 
 	std::cout<<"Image " << width << "x" << height << ", " << payload << " bytes " << std::endl;
@@ -63,14 +46,13 @@ bool AravisCam::initializeCam(){
 	//Create Stream and fill buffer queue
 	stream = arv_device_create_stream (device, NULL, NULL);
 
-        for (int i = 0; i < BUFFERQ; i++)
+    for (int i = 0; i < BUFFERQ; i++)
 		arv_stream_push_buffer (stream, arv_buffer_new (payload, NULL));
 	
 	//Allocate buffer and size
-	rawbuffer = new unsigned char[1936*1216];	
+	rawbuffer = new unsigned char[payload];	
 	size = cv::Size(width, height);
 
-	//Get and save the node that is the software trigger
 	triggernode = arv_gc_get_node(genicam,"TriggerSoftware");
 
 	return true;
@@ -84,33 +66,49 @@ void AravisCam::trigger(){
 	std::cout<< "Sent software trigger" << std::endl;
 }
 
+bool AravisCam::getImage(cv::Mat &frame){	
+
+	bool image_ok = getBuffer();
+
+    std::cout << "Image OK: " << image_ok << std::endl;
+	
+	if(image_ok) {
+		rawmat = cv::Mat(size, CV_8UC1, rawbuffer);
+		cv::cvtColor(rawmat,frame,CV_BayerGB2RGB);	//Average Time = ~15 ms 
+	}
+	
+	return image_ok;
+}
+
+
 bool AravisCam::getBuffer(){
 	ArvBuffer * arvbufr;
 	bool gotbuf = false;
 	int cycles = 0;
 
-	std::cout<<"Getting Buffer...";
+	std::cout<<"Getting Buffer..." << std::endl;
 	do {
-        g_usleep(50000);
+		g_usleep (50000);
 		cycles++;
-		do  {
 		for (int i = 0; i < BUFFERQ; i++){
 			arvbufr = arv_stream_try_pop_buffer (stream);
 			if (arvbufr != NULL){
+                std::cout << "Buffer size " << arvbufr->size << std::endl;
 				switch(arvbufr->status){
-					case ARV_BUFFER_STATUS_SUCCESS: std::cout<<"Success"<<std::endl; break;
-					case ARV_BUFFER_STATUS_TIMEOUT: std::cout<<"Timeout"<<std::endl; break;
+					case ARV_BUFFER_STATUS_SUCCESS: 
+                        memcpy(rawbuffer, arvbufr->data, payload);
+                        std::cout<<"Success, copied "<< payload << " bytes" << std::endl; 
+                        gotbuf = true;
+                        break;
+					case ARV_BUFFER_STATUS_TIMEOUT: 
+                        std::cout<<"Timeout"<<std::endl; 
+                        break;
 					default: std::cout<<"Error"<<std::endl;;
 				}
-				if (arvbufr->status == ARV_BUFFER_STATUS_SUCCESS){
-					memcpy(rawbuffer,arvbufr->data,payload);
-					gotbuf = true;			
-				}	 
 				arv_stream_push_buffer (stream, arvbufr);
 			}		 
 		}
-		} while (arvbufr != NULL && !gotbuf);
-	}while(cycles < TIMEOUT && !gotbuf);
+	} while (cycles < TIMEOUT && !gotbuf);
 
 	return gotbuf;
 }
@@ -141,20 +139,4 @@ void AravisCam::endCam(){
 	g_object_unref (device);
 }
 
-bool AravisCam::getImage(cv::Mat &frame){	
-
-	bool image_ok = getBuffer();
-	
-	if(image_ok){
-		rawmat = cv::Mat(size,CV_8UC1,rawbuffer);
-		cv::cvtColor(rawmat,frame,CV_BayerGB2RGB);	//Average Time = ~15 ms 
-		
-		if (frame.empty())
-		{
-			image_ok = false;
-		}
-	}
-	
-	return image_ok;
-}
 

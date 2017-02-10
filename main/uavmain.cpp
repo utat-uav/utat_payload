@@ -14,14 +14,18 @@
 #include "gps_mod.h"
 #include "io_utils.h"
 #include "config.h"
+#ifdef USE_ARAVIS
 #include "araviscamera.h" 
+#endif
 
-#define FOLDER "Pictures/"
+#define FOLDER "/home/odroid/Pictures/"
 
 volatile std::sig_atomic_t finish = 0; //Signal Variable
 std::mutex mtx;
 Gps *ublox;
-int usegps, saveimg, view, start_delay, strm; //Options
+std::thread gps_thread;
+int cameratype, usegps, saveimg, view, start_delay, strm; //Options
+double sizefac;
 
 void exit_signal(int param){
 	mtx.lock();
@@ -32,8 +36,7 @@ void exit_signal(int param){
 
 void gpsUpdate(){
 	while(!finish){
-		if (usegps)
-			ublox->readGPS();
+        ublox->readGPS();
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(150));
 	}
@@ -49,7 +52,7 @@ int main(){
 	std::stringstream directory;
 
 	std::vector<int> jpg_params;
-	cv::Mat frame;
+	cv::Mat frame, preview;
 
 	parseConfig();
 	jpg_params.push_back(CV_IMWRITE_JPEG_QUALITY);
@@ -58,9 +61,17 @@ int main(){
 	//Set Signals
 	std::signal(SIGINT,exit_signal); 	//Set up Ctrl+C signal
 
+	cameratype = 1;
+
 	//Construct Cameras
-    camera = new AravisCam();
-    std::cout<<"Using Aravis camera"<<std::endl;
+	if (cameratype == 1){
+#ifdef USE_ARAVIS
+		camera = new AravisCam();
+		std::cout<<"Using Aravis camera"<<std::endl;
+#else
+		camera = new WebCam();
+#endif
+	}
 	
 	if(view)	
 		cv::namedWindow("Camera Viewer", cv::WINDOW_AUTOSIZE);
@@ -68,11 +79,14 @@ int main(){
 	n_saved = checkLog(); 			//Check the log and open it
 	openLogtoWrite(n_saved);
 
-	ublox = new Gps();			//Initialize the GPS
-	std::thread gps_thread(gpsUpdate);
-	
-	camera_ok = camera->initializeCam();  	//Initialize the camera
+    ublox = new Gps();			//Initialize the GPS
+    std::cout<<"Got here"<<std::endl;
+    gps_thread = std::thread(gpsUpdate);
 
+	camera_ok = camera->initializeCam();  	//Initialize the camera
+	
+	saveimg = 1;
+	
 	if (camera_ok) {
 
 		std::cout << "Start camera acquisition in " << start_delay << " seconds" << std::endl;
@@ -80,36 +94,43 @@ int main(){
 
 		while(!finish){  //--Main Acquisition Loop
 
-			filename.str(""); directory.str(""); //Update filenames
+			filename.str(""); 
+            directory.str(""); //Update filenames
 			filename<<"im"<<std::setfill('0')<<std::setw(4)<<++n_saved<<".jpg";
 			directory<<FOLDER<<filename.str();
 		
 			camera->trigger(); //Send camera trigger
 
-			if (usegps){
-				if(ublox->data_is_good)	
-					std::cout<<"GPS up to date"<<std::endl;
-				else	
-					std::cout<<"No GPS available" <<std::endl;
-			}
-			mtx.lock();
-			writeImageInfo(ublox->current_loc, filename.str()); //Record GPS 
-			mtx.unlock();
+            if(ublox->data_is_good)	
+                std::cout<<"GPS up to date"<<std::endl;
+            else	
+                std::cout<<"No GPS available" <<std::endl;
+
+            mtx.lock();
+            writeImageInfo(ublox->current_loc, filename.str()); //Record GPS 
+            mtx.unlock();
 
 			frame_ok = camera->getImage(frame); //Acquire the image
 
 			if(frame_ok){ //Acquired Image
-                cv::imwrite(directory.str(), frame, jpg_params);
-                std::cout<<"Saved to " << filename.str() <<std::endl;
+				if(saveimg) {
+					cv::imwrite(directory.str(), frame, jpg_params);
+					std::cout<<"Saved to " << directory.str() <<std::endl;
+				}
+
+				if(view) {
+					cv::imshow("Camera Viewer", frame); 
+					cv::waitKey(50);
+				}	
 			}
 			
 			std::this_thread::sleep_for(std::chrono::milliseconds(250));
 		} 
-		//Finished photographing
+		// Finished photographing
 		delete camera;
 	}
 
-	gps_thread.join();
+    gps_thread.join();
 	closeLog();
 
 	return 0;

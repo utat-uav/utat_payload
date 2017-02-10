@@ -7,7 +7,7 @@ Gps::Gps(){
 	current_loc.longitude = 0;
 	current_loc.altitude  = 0;
 	current_loc.heading = 0;
-	current_loc.time = new char[100];
+	current_loc.time = 0.0;
 
 	if(uavgps->stream(WATCH_ENABLE|WATCH_JSON) == NULL)
 		std::cout<<"Error opening GPS" << std::endl; 
@@ -16,7 +16,6 @@ Gps::Gps(){
 }
 
 Gps::~Gps(){
-	delete current_loc.time;
 }
 
 void Gps::readGPS(){
@@ -42,7 +41,8 @@ void Gps::readGPS(){
 			current_loc.longitude = data->fix.longitude;
 			current_loc.altitude  = data->fix.altitude;
 			current_loc.heading = data->fix.track;
-			unix_to_iso8601(data->fix.time, current_loc.time, sizeof(current_loc.time));
+			current_loc.time = data->fix.time;
+			//unix_to_iso8601(data->fix.time, current_loc.time, sizeof(current_loc.time));
 			data_is_good = true;
 			gpsmtx.unlock();
 		}
