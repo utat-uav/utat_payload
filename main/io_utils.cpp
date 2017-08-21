@@ -10,6 +10,11 @@ bool parseConfig(){
 	if(!cfgstream) return cfg_ok;
 
 	while(std::getline(cfgstream,param,'=')) {
+		if (param.compare("cameratype")==0){
+			std::getline(cfgstream,num);
+			cameratype = std::stoi(num);
+			continue;
+		}
 		if (param.compare("usegps")==0){
 			std::getline(cfgstream,num);
 			usegps = std::stoi(num);
@@ -18,6 +23,12 @@ bool parseConfig(){
 		if(param.compare("savepicture")==0){
 			std::getline(cfgstream,num);
 			saveimg = std::stoi(num);
+			continue;
+		}
+		if(param.compare("sizefactor")==0){
+			std::getline(cfgstream,num);
+			tmp = std::stoi(num);
+			sizefac = double(1/double(tmp));
 			continue;
 		}
 		if(param.compare("viewer")==0){

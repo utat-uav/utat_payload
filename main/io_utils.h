@@ -4,10 +4,10 @@
 
 #include "gps_struct.h"
 
-#define CONFIG_FILE "uav/utat_payload/options.cfg"
-#define LOG_FILE "Pictures/uav_gps.log"
+#define CONFIG_FILE "/home/odroid/uav/utat_payload/options.cfg"
+#define LOG_FILE "/home/odroid/Pictures/uav_gps.log"
 
-extern int usegps, saveimg, view, start_delay, strm;
+extern int cameratype, usegps, saveimg, view, start_delay, strm;
 extern double sizefac;
 
 bool parseConfig();
